@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Guestbook admin</title>
+    <style>
+      :root { color-scheme: dark; font-family: system-ui, sans-serif; }
+      body { margin: 0; padding: 32px 20px; background: #14121c; color: #f6efe2; }
+      main { max-width: 720px; margin: 0 auto; }
+      h1 { margin: 0 0 6px; font-size: 26px; }
+      h2 { margin: 30px 0 10px; font-size: 18px; color: #f4d35e; }
+      p.hint { margin: 0 0 18px; color: #a9b1c4; }
+      form, .note { display: flex; gap: 10px; align-items: center; }
+      input { flex: 1; padding: 10px 12px; border-radius: 9px; border: 1px solid #ffffff30; background: #0b101e; color: inherit; font: inherit; }
+      button { padding: 9px 14px; border-radius: 999px; border: 1px solid #ffffff30; background: none; color: inherit; font: inherit; cursor: pointer; }
+      button.ok { background: #7cf2c8; color: #0b101e; border-color: transparent; }
+      button.no { border-color: #e2574c; color: #ff9a8f; }
+      .note { justify-content: space-between; padding: 12px 14px; margin-bottom: 8px; border-radius: 12px; background: #ffffff0d; }
+      .note div { min-width: 0; }
+      .note strong { display: block; overflow-wrap: anywhere; }
+      .note small { color: #a9b1c4; }
+      #status { min-height: 1.4em; color: #a9b1c4; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Guestbook admin</h1>
+      <p class="hint">Approve notes before they appear on the corkboard. The token stays in this tab only.</p>
+      <form id="login">
+        <input id="token" type="password" placeholder="Admin token" autocomplete="current-password" required />
+        <button class="ok" type="submit">Load notes</button>
+      </form>
+      <p id="status" role="status"></p>
+      <h2>Waiting for approval</h2>
+      <div id="pending"></div>
+      <h2>On the board</h2>
+      <div id="approved"></div>
+    </main>
+    <script>
+      const $ = (id) => document.getElementById(id);
+      let token = sessionStorage.getItem("gb-token") || "";
+      const call = async (method, body) => {
+        const r = await fetch("/api/admin/notes", { method, headers: { authorization: "Bearer " + token, "content-type": "application/json" }, body: body && JSON.stringify(body) });
+        const data = await r.json().catch(() => ({}));
+        if (!r.ok) throw new Error(data.error || "Request failed (" + r.status + ")");
+        return data;
+      };
+      const row = (note, actions) => {
+        const el = document.createElement("div"); el.className = "note";
+        const text = document.createElement("div");
+        const msg = document.createElement("strong"); msg.textContent = note.message;
+        const meta = document.createElement("small"); meta.textContent = (note.name || "Anonymous") + " · " + new Date(note.at).toLocaleString();
+        text.append(msg, meta);
+        const buttons = document.createElement("div"); buttons.style.display = "flex"; buttons.style.gap = "6px";
+        for (const [label, action, cls] of actions) {
+          const b = document.createElement("button"); b.textContent = label; b.className = cls;
+          b.addEventListener("click", async () => { b.disabled = true; try { await call("POST", { id: note.id, action }); await load(); } catch (e) { $("status").textContent = e.message; b.disabled = false; } });
+          buttons.append(b);
+        }
+        el.append(text, buttons);
+        return el;
+      };
+      async function load() {
+        $("status").textContent = "Loading…";
+        try {
+          const { pending, approved } = await call("GET");
+          $("pending").replaceChildren(...(pending.length ? pending.map((n) => row(n, [["Approve", "approve", "ok"], ["Reject", "reject", "no"]])) : [Object.assign(document.createElement("p"), { className: "hint", textContent: "Nothing waiting." })]));
+          $("approved").replaceChildren(...(approved.length ? approved.map((n) => row(n, [["Remove", "delete", "no"]])) : [Object.assign(document.createElement("p"), { className: "hint", textContent: "No notes yet." })]));
+          $("status").textContent = pending.length + " waiting, " + approved.length + " on the board.";
+        } catch (e) { $("status").textContent = e.message; }
+      }
+      $("login").addEventListener("submit", (e) => { e.preventDefault(); token = $("token").value.trim(); sessionStorage.setItem("gb-token", token); load(); });
+      if (token) load();
+    </script>
+  </body>
+</html>

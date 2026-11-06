@@ -1,0 +1,38 @@
+/* Personal room only. While watching the TV, the title steps aside and a hint says how to go back. */
+.brand { transition: opacity 0.5s ease; }
+body.watching .brand { opacity: 0; pointer-events: none; }
+body.watching::after {
+  content: "Click anywhere or press Esc to go back to the room";
+  position: fixed;
+  top: 22px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: rgba(16, 20, 32, 0.78);
+  color: #f6efe2;
+  font: 500 14px "DM Sans", sans-serif;
+  pointer-events: none;
+  animation: watch-hint 0.5s ease both;
+}
+@keyframes watch-hint { from { opacity: 0; transform: translate(-50%, -8px); } }
+@media (prefers-reduced-motion: reduce) { body.watching::after { animation: none; } }
+
+/* A midnight-navy backdrop instead of the professional room's purple. */
+:root { --night: #0c1424; }
+.menu { background: #0c1424d9; }
+
+/* Movies & stories: written like the opening of a film. */
+.reel { display: grid; gap: 14px; margin-top: 4px; }
+.reel .logline { font: italic 400 17px/1.55 var(--body); color: var(--cream); border-left: 2px solid var(--sec); padding: 2px 0 2px 14px; }
+.reel .scene { display: grid; gap: 4px; padding: 14px 16px; border-radius: 13px; background: #ffffff08; border: 1px solid #ffffff1a; }
+.reel .scene b { font: 500 11.5px var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--sec); }
+.reel .scene strong { font: 700 17px/1.25 var(--display); }
+.reel .scene span { font-size: 14px; color: var(--dim); }
+.slate { display: grid; grid-template-columns: repeat(2, 1fr); border-radius: 13px; overflow: hidden; border: 1px solid #ffffff26; }
+.slate::before { content: ""; grid-column: 1 / -1; height: 14px; background: repeating-linear-gradient(-45deg, #f6efe2 0 14px, #0b101e 14px 28px); }
+.slate div { padding: 11px 14px; border-top: 1px solid #ffffff1a; }
+.slate div:nth-child(even) { border-left: 1px solid #ffffff1a; }
+.slate small { display: block; font: 10.5px var(--mono); letter-spacing: .14em; text-transform: uppercase; }
+.slate em { font: 600 14.5px var(--body); font-style: normal; color: var(--cream); }
+.reel .fade { font: 500 12px var(--mono); letter-spacing: .3em; text-align: right; color: var(--dim); }

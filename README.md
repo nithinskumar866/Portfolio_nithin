@@ -68,6 +68,17 @@ The site is hosted on Cloudflare Pages:
 - **Build command:** `npm run build`
 - **Output directory:** `dist`
 
+### Guestbook
+
+The personal room at `/personal` has a guestbook. Visitors' notes are saved by the Pages Functions in `functions/api/` and only appear on the corkboard after you approve them. To turn it on:
+
+1. In the Cloudflare dashboard, go to **Storage & Databases → KV** and create a namespace, for example `portfolio-guestbook`.
+2. In the Pages project, go to **Settings → Bindings**, add a **KV namespace** binding named `GUESTBOOK`, and pick that namespace.
+3. In **Settings → Variables and Secrets**, add a secret named `ADMIN_TOKEN` with a long random value.
+4. Redeploy, then open `/guestbook-admin.html`, enter the token, and approve or reject notes.
+
+Until the binding exists, the board stays empty and the form says the guestbook isn't taking notes. The functions don't run under `npm run dev`.
+
 ## Credits
 
 - The sleeping character is the `readyplayer.me.glb` avatar from the [three.js examples](https://github.com/mrdoob/three.js/tree/dev/examples/models/gltf), re-dressed and posed for this scene. Its file lists the copyright as Ready Player Me.
