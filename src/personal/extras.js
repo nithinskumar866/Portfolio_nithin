@@ -46,7 +46,7 @@ export function buildExtras({ world, box, cyl, ball, add, mat, G, HALF }) {
     glass.position.y = 0.04 + H / 2; tank.add(glass);
     box(W + 0.03, 0.03, L + 0.03, "#1d2230", tank, 0, 0.055 + H, 0, 0.01);
     add(new THREE.Mesh(new THREE.BoxGeometry(W - 0.08, 0.008, L - 0.1), new THREE.MeshBasicMaterial({ color: "#bff3ff", toneMapped: false })), tank, 0, 0.038 + H, 0, false);
-    const glow = new THREE.PointLight("#7fd8ff", 1.4, 2.6, 2); glow.position.set(0.3, 0.3, 0); tank.add(glow);
+    
     // Fish: a body, a tail that wags and an eye, swimming lazy loops.
     const fish = ["#ff8c42", "#f4d35e", "#4cc9f0", "#ff5d73", "#ffffff"].map((color, i) => {
       const f = new THREE.Group(); tank.add(f);
@@ -205,7 +205,7 @@ export function buildExtras({ world, box, cyl, ball, add, mat, G, HALF }) {
   const washTex = canvasTexture(256, 256, (c) => { const g = c.createRadialGradient(128, 0, 10, 128, 40, 240); g.addColorStop(0, "rgba(255,220,160,0.3)"); g.addColorStop(1, "rgba(255,220,160,0)"); c.fillStyle = g; c.fillRect(0, 0, 256, 256); });
   const wash = add(new THREE.Mesh(new THREE.PlaneGeometry(2.4, 1.6), new THREE.MeshBasicMaterial({ map: washTex, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending })), future, 1.05, 3.5, frameZ + 0.085, false);
   wash.raycast = () => {};
-  const pictureLight = new THREE.PointLight("#ffd9a0", 1.6, 2.6, 2); pictureLight.position.set(1.05, 4.0, frameZ + 0.6); future.add(pictureLight);
+  
   // Brass plaque under the frame.
   const plaqueTex = canvasTexture(512, 96, (c, W, H) => { const g = c.createLinearGradient(0, 0, W, H); g.addColorStop(0, "#e2c06a"); g.addColorStop(1, "#b08834"); c.fillStyle = g; c.fillRect(0, 0, W, H); c.strokeStyle = "#7a5c1e"; c.lineWidth = 3; c.strokeRect(6, 6, W - 12, H - 12); c.fillStyle = "#3d2c0c"; c.textAlign = "center"; c.font = "600 30px 'DM Sans', sans-serif"; c.fillText("Something big is being built.", W / 2, 60); });
   add(new THREE.Mesh(new THREE.PlaneGeometry(0.64, 0.12), new THREE.MeshStandardMaterial({ map: plaqueTex, metalness: 0.5, roughness: 0.35 })), future, 1.05, 2.72, frameZ + 0.012, false);
@@ -240,7 +240,7 @@ export function buildExtras({ world, box, cyl, ball, add, mat, G, HALF }) {
   // Rings of "buzz" spreading across the floor while it rings.
   const ringMats = [0, 1, 2].map(() => new THREE.MeshBasicMaterial({ color: "#9fd8ff", transparent: true, opacity: 0, depthWrite: false, side: THREE.DoubleSide }));
   const rings = ringMats.map((m) => { const r = add(new THREE.Mesh(new THREE.RingGeometry(0.1, 0.112, 40), m), phone, 0, 0.004, 0, false); r.rotation.x = -Math.PI / 2; return r; });
-  const phoneGlow = new THREE.PointLight("#9fc6ff", 0.6, 1.2, 2); phoneGlow.position.set(0, 0.12, 0); phone.add(phoneGlow);
+  
   // A larger invisible box so the phone is easy to click.
   add(new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.12, 0.34), new THREE.MeshBasicMaterial({ colorWrite: false, depthWrite: false })), phone, 0, 0.05, 0, false);
   let answeredAt = 0, wasPhone = false;
@@ -282,7 +282,7 @@ export function buildExtras({ world, box, cyl, ball, add, mat, G, HALF }) {
   };
   drawGuestbook(); document.fonts?.ready.then(drawGuestbook);
   add(new THREE.Mesh(new THREE.PlaneGeometry(2.0, 1.375), new THREE.MeshStandardMaterial({ map: gbTex, roughness: 0.9 })), guest, GB_X, GB_Y, GB_Z + 0.062, false);
-  const gbLight = new THREE.PointLight("#ffd9a0", 1.2, 3, 2); gbLight.position.set(GB_X, GB_Y + 0.6, GB_Z + 1.0); guest.add(gbLight);
+  
 
   // --- Mini home cinema in the back corner: a projector on a side table, a screen, an armchair and popcorn ---
   const films = new THREE.Group(); films.userData.station = "films"; world.add(films);
@@ -382,7 +382,7 @@ export function buildExtras({ world, box, cyl, ball, add, mat, G, HALF }) {
   const moteGeo = new THREE.BufferGeometry(); moteGeo.setAttribute("position", new THREE.BufferAttribute(motePos, 3));
   const motes = new THREE.Points(moteGeo, new THREE.PointsMaterial({ color: "#fff1cf", size: 0.02, transparent: true, opacity: 0.8, depthWrite: false })); motes.raycast = () => {};
   world.add(motes);
-  const screenGlowF = new THREE.PointLight("#ffd9a8", 1.2, 3, 2); screenGlowF.position.set(screenAt.x, screenAt.y, screenAt.z + 0.8); films.add(screenGlowF);
+  
   // A cosy armchair turned towards the screen, with a throw and a bucket of popcorn.
   const arm = new THREE.Group(); arm.position.set(-4.75, 0, -3.55); arm.rotation.y = Math.atan2(screenAt.x + 4.75, screenAt.z + 3.55); films.add(arm);
   const fabric = mat("#c2763f", { roughness: 0.95 }), fabricDark = mat("#a5612f", { roughness: 0.95 });
@@ -433,7 +433,7 @@ export function buildExtras({ world, box, cyl, ball, add, mat, G, HALF }) {
     add(new THREE.Mesh(new THREE.PlaneGeometry(0.2, 0.34), m), heart, side * (0.11 + (side > 0 ? 0.03 : 0)), 3.72, 0.03, false).rotation.z = side > 0 ? -0.12 : 0;
     return m;
   });
-  const heartGlow = new THREE.PointLight("#ff4f7b", 1.6, 2.6, 2); heartGlow.position.set(0, 3.6, 0.5); heart.add(heartGlow);
+  
 
   return {
     journals, posters: null,
@@ -470,11 +470,10 @@ export function buildExtras({ world, box, cyl, ball, add, mat, G, HALF }) {
         mp.needsUpdate = true;
       }
       const flickerF = reduce ? 1 : 0.92 + Math.sin(t * 24) * 0.04 + Math.sin(t * 7.3) * 0.03;
-      beamMatF.opacity = (watching ? 0.16 : 0.1) * flickerF; screenMat.color.setScalar(flickerF); screenGlowF.intensity = (watching ? 1.6 : 1.1) * flickerF;
+      beamMatF.opacity = (watching ? 0.16 : 0.1) * flickerF; screenMat.color.setScalar(flickerF);
       // The broken heart's right half stutters, like a failing neon tube.
       const stutter = reduce ? 1 : Math.sin(t * 13) > 0.85 || Math.sin(t * 2.3 + 1) > 0.97 ? 0.15 : 1;
       neon[0].color.setScalar(reduce ? 1 : 0.85 + Math.sin(t * 2) * 0.1); neon[1].color.setScalar(stutter);
-      heartGlow.intensity = 1.3 + stutter * 0.4;
       // The phone rings in bursts until you answer it, then shows the call timer while its card is open.
       const onCall = current === "phone";
       if (onCall && !wasPhone) answeredAt = t;
@@ -484,7 +483,6 @@ export function buildExtras({ world, box, cyl, ball, add, mat, G, HALF }) {
       phoneBody.position.x = buzzing ? Math.sin(t * 90) * 0.003 : 0;
       phoneBody.rotation.y = buzzing ? Math.sin(t * 70) * 0.04 : 0;
       phScreenMat.color.setScalar(onCall || reduce ? 1 : 0.8 + Math.max(0, Math.sin(t * 2.4)) * 0.2);
-      phoneGlow.intensity = onCall ? 0.4 : 0.5 + (buzzing ? 0.5 : 0);
       rings.forEach((r, i) => {
         const k = ((t * 0.8 + i / 3) % 1);
         const show = !onCall && !reduce && cycle < 1.6;

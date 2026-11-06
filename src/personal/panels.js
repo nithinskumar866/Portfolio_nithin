@@ -59,6 +59,7 @@ export const EXTRA_SECTIONS = {
   heartbreak: { label: "Torn Pages", color: "#ff6b8b", tip: "Torn Pages: a poster from a sad chapter" },
   phone: { label: "Phone", color: "#7cf2c8", tip: "Unknown caller: click to answer" },
   guestbook: { label: "Guestbook", color: "#f4d35e", tip: "Guestbook: pin a note" },
+  scooter: { label: "My ride", color: "#19d3c5", tip: "My EV: click to see my ride" },
 };
 
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
@@ -141,6 +142,21 @@ export function mountHeartbreak(root) {
     <div class="view">${HEARTBREAK_LINES.map(([line, who], i) => `
       <div class="card static in" style="--i:${i}"><strong>“${esc(line)}”</strong>${who ? `<span>${esc(who)}</span>` : ""}</div>`).join("")}
       <p class="sub">Still writing. The next chapter’s better.</p>
+    </div>`;
+}
+
+export function mountScooter(root) {
+  const lines = [
+    ["Electric", "Silent, zero tailpipe, green plates. The future of getting around, today."],
+    ["On charge", "Plugged in every night, so it's full by morning. Unlike me."],
+    ["Head-clearer", "Some of my best ideas show up on a quiet ride, not at the desk."],
+  ];
+  root.innerHTML = `
+    <p class="eyebrow">Parked by the desk</p>
+    <h2>My ride</h2>
+    <p class="lead">My electric scooter. I love this thing more than I should.</p>
+    <div class="view">${lines.map(([title, text], i) => `
+      <div class="card static in" style="--i:${i}"><strong>${esc(title)}</strong><span>${esc(text)}</span></div>`).join("")}
     </div>`;
 }
 

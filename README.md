@@ -82,6 +82,7 @@ Until the binding exists, the board stays empty and the form says the guestbook 
 ## Credits
 
 - The sleeping character is the `readyplayer.me.glb` avatar from the [three.js examples](https://github.com/mrdoob/three.js/tree/dev/examples/models/gltf), re-dressed and posed for this scene. Its file lists the copyright as Ready Player Me.
+- The scooter in the personal room is `public/models/moped.fbx`, recoloured and given number plates. Its source and licence still need to be credited here.
 
 ## Contact
 

@@ -5,7 +5,8 @@ import { SECTIONS, SECTION_ORDER, mountSection } from "../content.js";
 import { createTour, hasSeenTour } from "../tour.js";
 import { createMatch } from "./match.js";
 import { buildExtras } from "./extras.js";
-import { EXTRA_SECTIONS, mountPublications, mountFuture, mountFilms, mountHeartbreak, mountPhone, mountGuestbook } from "./panels.js";
+import { buildHobbies } from "./hobbies.js";
+import { EXTRA_SECTIONS, mountPublications, mountFuture, mountFilms, mountHeartbreak, mountPhone, mountGuestbook, mountScooter } from "./panels.js";
 import "@fontsource/syne/700.css";
 import "@fontsource/syne/800.css";
 import "@fontsource/dm-sans/400.css";
@@ -46,6 +47,7 @@ STOPS.future = { pos: [1.0, 3.25, -1.8], look: [1.05, 3.35, -6.0] };
 STOPS.poster = { pos: [-4.15, 3.0, -2.6], look: [-4.15, 3.0, -6.0] };
 STOPS.films = { pos: [-1.1, 3.0, 0.5], look: [-3.95, 0.95, -4.4] };
 STOPS.guestbook = { pos: [4.65, 2.75, -1.7], look: [5.05, 2.45, -6.0] };
+STOPS.scooter = { pos: [6.1, 2.3, -0.4], look: [5.05, 0.7, -4.5] };
 STOPS.phone = { pos: [0.2, 1.5, 3.2], look: [-1.0, 0.1, 1.7] };
 STOPS.heartbreak = { pos: [-1.9, 3.05, 3.2], look: [-6.0, 3.1, 3.2] };
 
@@ -60,9 +62,12 @@ try {
 }
 // If the browser drops the graphics context, reload so the textures come back with the scene.
 canvas.addEventListener("webglcontextlost", (e) => { e.preventDefault(); setTimeout(() => location.reload(), 400); });
-renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+const maxRatio = Math.min(devicePixelRatio, 1.5);
+renderer.setPixelRatio(maxRatio);
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+// Shadows are redrawn every other frame instead of every frame (see render()).
+renderer.shadowMap.autoUpdate = false;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.15;
 
@@ -80,9 +85,9 @@ function add(mesh, parent, x = 0, y = 0, z = 0, shadow = true) {
   parent.add(mesh);
   return mesh;
 }
-const box = (w, h, d, color, parent, x, y, z, r = 0.035) => add(new THREE.Mesh(new RoundedBoxGeometry(w, h, d, 3, Math.min(r, w / 2.01, h / 2.01, d / 2.01)), color.isMaterial ? color : mat(color)), parent, x, y, z);
+const box = (w, h, d, color, parent, x, y, z, r = 0.035) => add(new THREE.Mesh(new RoundedBoxGeometry(w, h, d, 2, Math.min(r, w / 2.01, h / 2.01, d / 2.01)), color.isMaterial ? color : mat(color)), parent, x, y, z);
 const cyl = (rt, rb, h, color, parent, x, y, z, seg = 28) => add(new THREE.Mesh(new THREE.CylinderGeometry(rt, rb, h, seg), color.isMaterial ? color : mat(color)), parent, x, y, z);
-const ball = (r, color, parent, x, y, z) => add(new THREE.Mesh(new THREE.SphereGeometry(r, 28, 20), color.isMaterial ? color : mat(color)), parent, x, y, z);
+const ball = (r, color, parent, x, y, z) => add(new THREE.Mesh(new THREE.SphereGeometry(r, r < 0.04 ? 10 : r < 0.12 ? 16 : 28, r < 0.04 ? 7 : r < 0.12 ? 12 : 20), color.isMaterial ? color : mat(color)), parent, x, y, z);
 const station = (name) => { const g = new THREE.Group(); g.userData.station = name; world.add(g); return g; };
 
 // Shell of the room.
@@ -160,7 +165,7 @@ const lampLight = new THREE.SpotLight("#ffc27a", 24, 11, 1.08, 0.72, 1.7);
 lampLight.position.set(2.2, 2.25, -3.1 - G);
 lampLight.target.position.set(1.0, 0, -0.9 - G);
 lampLight.castShadow = true;
-lampLight.shadow.mapSize.set(2048, 2048);
+lampLight.shadow.mapSize.set(1024, 1024);
 lampLight.shadow.bias = -0.0006;
 lampLight.shadow.radius = 5;
 world.add(lampLight, lampLight.target);
@@ -405,7 +410,7 @@ const match = createMatch(renderer, { still: reduce });
   box(1.92, 1.12, 0.06, "#15171d", tv, 0, 1.75, 0.05, 0.03);
   add(new THREE.Mesh(new THREE.PlaneGeometry(1.84, 1.035), new THREE.MeshBasicMaterial({ map: match.texture, toneMapped: false })), tv, 0, 1.75, 0.082, false);
 }
-const tvGlow = new THREE.PointLight("#9fc6ff", 2.6, 4.5, 2); tvGlow.position.set(0, 1.7, 0.8); tv.add(tvGlow);
+
 match.update(0);
 let tvFrame = 0;
 
@@ -457,6 +462,7 @@ QUOTES.forEach((q, i) => {
 
 // Fish tank, journals, the SaaS blueprint, the home cinema, the Torn Pages poster, the phone and the guestbook.
 const extras = buildExtras({ world, box, cyl, ball, add, mat, G, HALF });
+const hobbies = buildHobbies({ world, box, cyl, add, mat, HALF });
 
 // Guestbook notes come from the site's own API (a Cloudflare Pages Function). Without it, the board just starts empty.
 let guestNotes = [];
@@ -565,7 +571,31 @@ function makeHair() {
   return hair;
 }
 
-// A rigged human model, posed by aiming each limb bone in a direction in the room.
+// Closed eyelids with a lash line, placed over each eye in head-bone space.
+function makeEyelids(skin) {
+  const lids = new THREE.Group();
+  const lidMat = new THREE.MeshStandardMaterial({ color: skin, roughness: 0.75 });
+  const lashMat = new THREE.MeshBasicMaterial({ color: "#2a1d17" });
+  for (const x of [-0.0305, 0.0305]) {
+    const lid = new THREE.Mesh(new THREE.SphereGeometry(0.0205, 16, 10), lidMat);
+    lid.position.set(x, 0.088, 0.093); lid.scale.set(1.05, 0.9, 0.62); lids.add(lid);
+    const lash = new THREE.Mesh(new THREE.TorusGeometry(0.016, 0.0014, 4, 14, Math.PI), lashMat);
+    lash.position.set(x, 0.089, 0.1055); lash.rotation.z = Math.PI; lash.scale.set(1, 0.45, 1); lids.add(lash);
+  }
+  lids.traverse((o) => { o.raycast = () => {}; });
+  return lids;
+}
+
+// A rigged human model, posed by aiming each limb bone in a direction in the room (+x towards his feet, +z towards the viewer).
+const POSE = {
+  at: [1.12, 0.79, 0.02], roll: 0.62,
+  hang: [[0.14, -0.3, 0.95], [0.03, -1, 0.2], [0.02, -1, 0.1]],
+  hangFingers: [[0.03, -1, -0.12], [0.02, -0.95, -0.35]],
+  up: [[-0.3, -0.75, 0.15], [-0.3, 0, 0.95]], upHand: [-0.25, -0.15, 0.95],
+  upFingers: [[-0.15, -0.55, 0.8], [-0.05, -0.9, 0.4]],
+  legL: [[1, -0.06, 0.05], [1, -0.02, -0.06]], legR: [[0.97, 0.06, -0.22], [0.96, -0.06, 0.26]],
+};
+
 const HOODIE = "#2a303d";
 const sleeper = { pose: null, chest: null, chest2: null, arm: null, head: null, base: new Map() };
 const scratch = { a: new THREE.Vector3(), b: new THREE.Vector3(), q: new THREE.Quaternion(), p: new THREE.Quaternion(), w: new THREE.Quaternion() };
@@ -604,31 +634,37 @@ new GLTFLoader().load("/models/sleeper.glb", (gltf) => {
       if (o.material.name === "Wolf3D_Skin" || o.material.name === "Wolf3D_Body") { o.material.color.set("#cba892"); o.material.needsUpdate = true; }
       // The model's hair is fused with a hat, so it's hidden and replaced by makeHair() below.
       if (o.material.name === "Wolf3D_Headwear") o.visible = false;
+      // The model has no blink shape, so its eyes are hidden behind closed lids (see makeEyelids()).
+      if (o.name === "EyeLeft" || o.name === "EyeRight") o.visible = false;
+      // The model's handlebar moustache reads as a costume when he's face up, so it's left off.
+      if (o.material.name === "Wolf3D_Beard") o.visible = false;
     }
   });
   // Face down along the sofa with the head at the pillow, rolled a little so his back faces the room.
+  // His left side faces the room, so his left arm is the one that slides off the sofa.
   const lying = new THREE.Matrix4().makeBasis(new THREE.Vector3(0, 0, 1), new THREE.Vector3(-1, 0, 0), new THREE.Vector3(0, -1, 0));
-  person.quaternion.setFromRotationMatrix(lying).premultiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), 0.62));
+  person.quaternion.setFromRotationMatrix(lying).premultiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), POSE.roll));
   person.scale.setScalar(1.17);
-  person.position.set(1.12, 0.79, 0.02);
+  person.position.set(...POSE.at);
   sofa.add(person);
   person.updateWorldMatrix(true, true);
 
   const chain = (names, dirs) => names.slice(0, -1).forEach((n, i) => aimBone(bones[n], bones[names[i + 1]], dirs[i]));
-  // The arm nearest the room slides off the sofa and hangs down.
+  // The arm nearest the room slides off the sofa and hangs to the floor.
   bones.LeftShoulder.rotation.x += 0.28;
-  chain(["LeftArm", "LeftForeArm", "LeftHand", "LeftHandMiddle1"], [[0.14, -0.3, 0.95], [0.03, -1, 0.2], [0.02, -1, 0.1]]);
-  for (const finger of ["Index", "Middle", "Ring", "Pinky"]) chain([`LeftHand${finger}1`, `LeftHand${finger}2`, `LeftHand${finger}3`], [[0.03, -1, -0.12], [0.02, -0.95, -0.35]]);
-  // The other arm curls round his head, the hand resting on the pillow.
-  chain(["RightArm", "RightForeArm", "RightHand", "RightHandMiddle1"], [[-0.75, -0.1, 0.35], [0.15, -0.12, 0.95], [0.35, -0.25, 0.85]]);
+  chain(["LeftArm", "LeftForeArm", "LeftHand", "LeftHandMiddle1"], POSE.hang);
+  for (const finger of ["Index", "Middle", "Ring", "Pinky"]) chain([`LeftHand${finger}1`, `LeftHand${finger}2`, `LeftHand${finger}3`], POSE.hangFingers);
+  // The other arm is bent and pushed under the pillow, the fingers just peeking out from under its front edge.
+  chain(["RightArm", "RightForeArm", "RightHand", "RightHandMiddle1"], [...POSE.up, POSE.upHand]);
+  for (const finger of ["Index", "Middle", "Ring", "Pinky"]) chain([`RightHand${finger}1`, `RightHand${finger}2`, `RightHand${finger}3`], POSE.upFingers);
   // One knee bent, the way people actually sleep.
-  chain(["LeftUpLeg", "LeftLeg", "LeftFoot"], [[1, -0.06, 0.05], [1, -0.02, -0.06]]);
-  chain(["RightUpLeg", "RightLeg", "RightFoot"], [[0.97, 0.06, -0.22], [0.96, -0.06, 0.26]]);
+  chain(["LeftUpLeg", "LeftLeg", "LeftFoot"], POSE.legL);
+  chain(["RightUpLeg", "RightLeg", "RightFoot"], POSE.legR);
   // Head turned away towards the back of the sofa, resting on the pillow.
   bones.Neck.rotation.y += 0.2;
   bones.Head.rotation.y += 0.45;
   bones.Head.rotation.z += 0.12;
-  bones.Head.add(makeHair());
+  bones.Head.add(makeHair(), makeEyelids("#8a5a44"));
 
   sleeper.chest = bones.Spine1; sleeper.chest2 = bones.Spine2; sleeper.arm = bones.LeftArm; sleeper.head = bones.Head;
   for (const b of [bones.Spine1, bones.Spine2, bones.LeftArm, bones.Head]) sleeper.base.set(b, b.quaternion.clone());
@@ -753,7 +789,7 @@ const cardHooks = {
 };
 
 // Where the robot stands for each stop. It walks around the sofa instead of through it.
-const STANDS = { home: [2.95, 2.35], about: [-2.95, -0.75], projects: [2.05, -1.35 - G], experience: [-1.4, -2.45 - G], skills: [2.5, -1.75 - G], certificates: [-2.65 - G, 0.4], contact: [2.85, 0.35], tv: [-4.4, 6.0], publications: [-4.3, 2.45], future: [-1.3, -3.5], poster: [-1.6, -3.4], films: [-1.5, -4.6], heartbreak: [-4.5, 4.6], guestbook: [2.4, -2.8], phone: [0.9, 2.8] };
+const STANDS = { home: [2.95, 2.35], about: [-2.95, -0.75], projects: [2.05, -1.35 - G], experience: [-1.4, -2.45 - G], skills: [2.5, -1.75 - G], certificates: [-2.65 - G, 0.4], contact: [2.85, 0.35], tv: [-4.4, 6.0], publications: [-4.3, 2.45], future: [-1.3, -3.5], poster: [-1.6, -3.4], films: [-1.5, -4.6], heartbreak: [-4.5, 4.6], guestbook: [2.4, -2.8], scooter: [3.3, -2.6], phone: [0.9, 2.8] };
 let robotPath = [];
 function walkTo(key) {
   const [x, z] = STANDS[key] ?? STANDS.home;
@@ -799,6 +835,7 @@ function go(key) {
     else if (key === "films") mountFilms(content);
     else if (key === "heartbreak") mountHeartbreak(content);
     else if (key === "phone") mountPhone(content, cardHooks);
+    else if (key === "scooter") mountScooter(content);
     else if (key === "guestbook") mountGuestbook(content, { notes: guestNotes, submit: submitNote });
     else mountSection(key, content, cardHooks);
     panel.scrollTop = 0;
@@ -940,8 +977,7 @@ function render() {
     head.rotation.x += ((pointer.y * 0.25) - head.rotation.x) * 0.07;
 
     updateBreeze(t, dt);
-    if ((tvFrame = (tvFrame + 1) % 2) === 0) match.update(t);
-    tvGlow.intensity = 2.4 + Math.sin(t * 5) * Math.sin(t * 1.7) * 0.5;
+    if ((tvFrame = (tvFrame + 1) % 3) === 0) match.update(t);
 
     // Nithin breathes, snores and dangles.
     if (sleeper.pose) {
@@ -985,6 +1021,7 @@ function render() {
     });
   }
   extras.update(t, dt, { current, journalIndex, reduce });
+  hobbies.update(t, reduce, current);
   posters.forEach((p, i) => {
     const want = current === "poster" && posterIndex === i ? 1 : 0;
     p.o += reduce ? want - p.o : (want - p.o) * Math.min(1, dt * 5);
@@ -993,9 +1030,28 @@ function render() {
     p.g.rotation.z = p.tilt * (1 - p.o);
   });
   if (reduce) { zs.forEach((item, i) => { item.z.position.set(-1.05 + i * 0.12, 1.3 + i * 0.28, 0.2); const size = 0.12 + i * 0.07; item.z.scale.set(size, size, 1); item.m.opacity = 0.9; }); robot.rotation.y = 0.72; }
+  if ((shadowFrame = (shadowFrame + 1) % 2) === 0) renderer.shadowMap.needsUpdate = true;
   renderer.render(scene, camera);
   tour.place();
+  adaptResolution(dt);
 }
+
+// If frames take too long, lower the resolution a step at a time; raise it again when there's headroom.
+let shadowFrame = 0, perfTime = 0, perfFrames = 0;
+function adaptResolution(dt) {
+  perfTime += Math.min(dt, 0.25); perfFrames++;
+  if (perfTime < 2) return;
+  const fps = perfFrames / perfTime, ratio = renderer.getPixelRatio();
+  perfTime = 0; perfFrames = 0;
+  const next = fps < 42 ? Math.max(0.75, ratio - 0.25) : fps > 58 ? Math.min(maxRatio, ratio + 0.25) : ratio;
+  if (next !== ratio) renderer.setPixelRatio(next);
+}
+// Small props (pebbles, popcorn, LEDs, fish) cast shadows too tiny to see, so leave them out of the shadow pass.
+world.traverse((o) => {
+  if (!o.isMesh || !o.castShadow) return;
+  o.geometry.computeBoundingSphere();
+  if (o.geometry.boundingSphere.radius * o.getWorldScale(new THREE.Vector3()).x < 0.07) o.castShadow = false;
+});
 renderer.setAnimationLoop(render);
 render();
 const loader = document.getElementById("loader");
