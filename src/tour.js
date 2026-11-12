@@ -2,14 +2,14 @@
 const STORAGE_KEY = "room-tour-seen";
 
 const STEPS = [
-  { say: "Shh! Nithin fell asleep after a long training run. I'm his robot, so I'll show you around. Want a quick tour?", primary: "Show me around", secondary: "I'll explore myself" },
-  { key: "projects", say: "His projects live on this monitor, like the AI Hiring Platform and agenttest." },
-  { key: "experience", say: "The pinboard has one note for each job he's done." },
-  { key: "skills", say: "This rack runs his skills. You can see where he used each one." },
-  { key: "certificates", say: "There's one book on this shelf for each certificate." },
-  { key: "contact", say: "Want to reach him? Leave a message in the mailbox. I'll make sure he sees it." },
-  { key: "about", say: "And that's Nithin. Click him to read about him. He won't wake up, I promise." },
-  { say: "Your turn! Click anything in the room, or use the menu below. Click me if you want the tour again.", primary: "Start exploring" },
+  { say: "Shh, he's asleep. The models are still training. I'm his robot. Want me to show you what he's built?", primary: "Show me", secondary: "I'll look around myself" },
+  { key: "projects", say: "Everything he's built runs on this monitor. Open a project, like the AI Hiring Platform or DocuMentor, and watch it work." },
+  { key: "experience", say: "One note on this board for every job, with what he actually shipped there." },
+  { key: "skills", say: "This rack runs his skills. Pick one and it shows you where he used it. Receipts included." },
+  { key: "certificates", say: "One book on this shelf for every certificate. He did the reading." },
+  { key: "contact", say: "Want to reach him? Leave a letter in the mailbox. I'll make sure he sees it when he wakes up." },
+  { key: "about", say: "And that's Nithin. Click him to read about him. Don't worry, he won't wake up." },
+  { say: "That's the tour. Click anything in the room, or use the menu below. Click me if you want to go round again.", primary: "Start exploring" },
 ];
 
 export function hasSeenTour() {

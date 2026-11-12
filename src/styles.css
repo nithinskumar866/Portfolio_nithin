@@ -101,6 +101,15 @@ body.open #panel { transform: none; visibility: visible; }
 .thumb { display: grid; place-items: center; background: color-mix(in srgb, var(--sec) 25%, #0b101e); color: var(--sec); font: 700 17px var(--display); text-transform: uppercase; }
 .project.open .acc-head img { opacity: 0; width: 0; margin-right: -13px; }
 .project .acc-head img { transition: opacity .2s; }
+.project:not(.mini) { box-shadow: inset 3px 0 0 var(--sec); }
+.project .live { color: var(--dim); } .project .live i { font-style: normal; }
+.project.open .live { color: var(--sec); }
+.project.open .live i::before { content: "\25CF  "; animation: blink 1.2s steps(2) infinite; }
+@keyframes blink { 50% { opacity: .2; } }
+.others { gap: 8px; }
+.project.mini { background: transparent; }
+.project.mini .acc-head { padding: 10px 14px; }
+.project.mini .acc-title strong { font-size: 14.5px; }
 img.wide { display: block; width: 100%; aspect-ratio: 16/9; object-fit: cover; object-position: top; border-radius: 10px; margin-bottom: 11px; }
 .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
 

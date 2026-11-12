@@ -3,6 +3,7 @@ import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.j
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { SECTIONS, SECTION_ORDER, mountSection } from "./content.js";
 import { createTour, hasSeenTour } from "./tour.js";
+import { createMonitor } from "./monitor.js";
 import "@fontsource/syne/700.css";
 import "@fontsource/syne/800.css";
 import "@fontsource/dm-sans/400.css";
@@ -119,11 +120,8 @@ for (const [x, z] of [[-0.7, -3.6], [2.6, -3.6], [-0.7, -2.6], [2.6, -2.6]]) box
 box(0.7, 0.05, 0.35, "#2a2e38", desk, 0.95, 1.17, -3.2);
 box(0.1, 0.42, 0.1, "#2a2e38", desk, 0.95, 1.38, -3.3, 0.02);
 box(1.82, 1.08, 0.08, "#191c24", desk, 0.95, 1.98, -3.34, 0.04);
-const screenCanvas = document.createElement("canvas");
-screenCanvas.width = 768; screenCanvas.height = 448;
-const screenTex = new THREE.CanvasTexture(screenCanvas);
-screenTex.colorSpace = THREE.SRGBColorSpace;
-add(new THREE.Mesh(new THREE.PlaneGeometry(1.68, 0.96), new THREE.MeshBasicMaterial({ map: screenTex, toneMapped: false })), desk, 0.95, 1.98, -3.295, false);
+const monitor = createMonitor({ reduce });
+add(new THREE.Mesh(new THREE.PlaneGeometry(1.68, 0.96), new THREE.MeshBasicMaterial({ map: monitor.texture, toneMapped: false })), desk, 0.95, 1.98, -3.295, false);
 box(1.0, 0.04, 0.34, "#e6dfd0", desk, 0.95, 1.17, -2.7, 0.015);
 for (let i = 0; i < 12; i++) for (let j = 0; j < 3; j++) box(0.06, 0.018, 0.06, "#b7ae9d", desk, 0.53 + i * 0.076, 1.2, -2.8 + j * 0.1, 0.006);
 const mug = cyl(0.085, 0.075, 0.18, "#d9583f", desk, 2.1, 1.24, -2.75);
@@ -359,48 +357,6 @@ const moon = new THREE.DirectionalLight("#ffeedd", 1.8); moon.position.set(5, 8,
 const fill = new THREE.PointLight("#ffb777", 9, 9, 1.8); fill.position.set(1.5, 3, 1.5); scene.add(fill);
 const screenGlow = new THREE.PointLight("#6fe0c0", 3.2, 4, 2); screenGlow.position.set(0.95, 1.95, -2.75); world.add(screenGlow);
 
-// Monitor: an illustrative test run that types itself.
-const LINES = [
-  ["$ pytest --agenttest-html=report.html", "#f6efe2"], ["", ""],
-  ["test_agent_answers_from_its_tools ... PASSED", "#55e0a8"], ["  tool called: web_search, grounded", "#a9b1c4"],
-  ["test_agent_survives_a_search_outage ... PASSED", "#55e0a8"], ["  mocked 503, gracefully degraded", "#a9b1c4"],
-  ["test_async_agent_is_mostly_right ... PASSED", "#55e0a8"], ["  repeated runs met min_pass_rate", "#a9b1c4"], ["", ""],
-  ["3 passed", "#ffb35c"],
-];
-let lineCount = reduce ? LINES.length : 0;
-let screenProject = null;
-function wrapText(c, text, x, y, width, lineHeight) {
-  let line = "", row = y;
-  for (const word of text.split(" ")) {
-    if (c.measureText(line + word).width > width && line) { c.fillText(line, x, row); row += lineHeight; line = ""; }
-    line += word + " ";
-  }
-  c.fillText(line, x, row);
-  return row + lineHeight;
-}
-function drawScreen() {
-  const c = screenCanvas.getContext("2d");
-  if (screenProject) {
-    c.fillStyle = "#0f1a2c"; c.fillRect(0, 0, 768, 448);
-    c.fillStyle = "#6cc5ff"; c.fillRect(0, 0, 768, 12);
-    c.font = "26px 'DM Mono', Consolas, monospace"; c.fillText(screenProject.tag, 40, 76);
-    c.fillStyle = "#f6efe2"; c.font = "800 50px Syne, sans-serif";
-    const after = wrapText(c, screenProject.title, 40, 140, 690, 58);
-    c.fillStyle = "#a9b1c4"; c.font = "30px 'DM Sans', sans-serif";
-    wrapText(c, screenProject.tagline, 40, after + 8, 690, 40);
-    screenTex.needsUpdate = true;
-    return;
-  }
-  c.fillStyle = "#0f1420"; c.fillRect(0, 0, 768, 448);
-  c.fillStyle = "#1c2433"; c.fillRect(0, 0, 768, 40);
-  ["#d9583f", "#e9c46a", "#55e0a8"].forEach((col, i) => { c.fillStyle = col; c.beginPath(); c.arc(26 + i * 26, 20, 8, 0, 7); c.fill(); });
-  c.font = "22px 'DM Mono', Consolas, monospace";
-  LINES.slice(0, lineCount).forEach(([t, col], i) => { c.fillStyle = col; c.fillText(t, 24, 82 + i * 35); });
-  screenTex.needsUpdate = true;
-}
-drawScreen();
-document.fonts?.ready.then(drawScreen);
-if (!reduce) setInterval(() => { lineCount = lineCount >= LINES.length + 3 ? 1 : lineCount + 1; drawScreen(); }, 800);
 
 // Navigation.
 const order = SECTION_ORDER;
@@ -425,7 +381,7 @@ const cardHooks = {
   note: (i) => { selected.note = i; },
   book: (i) => { selected.book = i; },
   rack: (i) => { selected.rack = i; },
-  project: (p) => { screenProject = p; drawScreen(); },
+  project: (p) => { monitor.show(p); screenGlow.color.set(monitor.accent); },
   flag: () => { flagUntil = performance.now() + 2000; },
 };
 
@@ -456,7 +412,7 @@ function go(key) {
   if (tour?.isActive()) tour.end();
   walkTo(key);
   selected.note = null; selected.book = null; selected.rack = null;
-  if (screenProject) { screenProject = null; drawScreen(); }
+  monitor.show(null); screenGlow.color.set(monitor.accent);
   if (key !== "home") {
     const panel = document.getElementById("panel");
     panel.style.setProperty("--sec", SECTIONS[key].color);
@@ -518,7 +474,7 @@ canvas.addEventListener("pointermove", (e) => {
   const s = pick(e);
   hovered = s;
   canvas.classList.toggle("pointing", Boolean(s));
-  if (s) { tip_.textContent = s === "guide" ? "The robot: replay the tour" : SECTIONS[s].tip; tip_.style.opacity = 1; tip_.style.transform = `translate(${Math.min(e.clientX + 16, innerWidth - 230)}px, ${e.clientY + 18}px)`; } else tip_.style.opacity = 0;
+  if (s) { tip_.textContent = s === "guide" ? "The robot: take the tour again" : SECTIONS[s].tip; tip_.style.opacity = 1; tip_.style.transform = `translate(${Math.min(e.clientX + 16, innerWidth - 230)}px, ${e.clientY + 18}px)`; } else tip_.style.opacity = 0;
 });
 canvas.addEventListener("pointerleave", hideTip);
 canvas.addEventListener("pointerup", (e) => {
@@ -553,6 +509,7 @@ const sleepNudge = new THREE.Quaternion(), sleepEuler = new THREE.Euler();
 const look = new THREE.Vector3();
 
 function render() {
+  monitor.update();
   const dt = Math.min(timer.getDelta(), 0.05), t = timer.elapsedTime;
   if (moveT < 1) {
     moveT = Math.min(1, moveT + dt / moveDur);

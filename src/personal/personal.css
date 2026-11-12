@@ -29,10 +29,4 @@ body.watching::after {
 .reel .scene b { font: 500 11.5px var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--sec); }
 .reel .scene strong { font: 700 17px/1.25 var(--display); }
 .reel .scene span { font-size: 14px; color: var(--dim); }
-.slate { display: grid; grid-template-columns: repeat(2, 1fr); border-radius: 13px; overflow: hidden; border: 1px solid #ffffff26; }
-.slate::before { content: ""; grid-column: 1 / -1; height: 14px; background: repeating-linear-gradient(-45deg, #f6efe2 0 14px, #0b101e 14px 28px); }
-.slate div { padding: 11px 14px; border-top: 1px solid #ffffff1a; }
-.slate div:nth-child(even) { border-left: 1px solid #ffffff1a; }
-.slate small { display: block; font: 10.5px var(--mono); letter-spacing: .14em; text-transform: uppercase; }
-.slate em { font: 600 14.5px var(--body); font-style: normal; color: var(--cream); }
 .reel .fade { font: 500 12px var(--mono); letter-spacing: .3em; text-align: right; color: var(--dim); }

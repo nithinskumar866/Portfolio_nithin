@@ -342,7 +342,7 @@ export function buildExtras({ world, box, cyl, ball, add, mat, G, HALF }) {
       c.globalAlpha = k; c.textAlign = "center";
       c.fillStyle = "#f3e6c4"; c.font = "500 17px 'DM Mono', monospace"; c.fillText("AN ORIGINAL STORY", W / 2, 106);
       c.font = "800 44px Syne, sans-serif"; c.fillText("Coming soon", W / 2, 160);
-      c.fillStyle = "#b8a989"; c.font = "italic 18px 'DM Sans', sans-serif"; c.fillText("Every story starts with someone who wouldn\u2019t stop dreaming.", W / 2, 202);
+      c.fillStyle = "#b8a989"; c.font = "italic 18px 'DM Sans', sans-serif"; c.fillText("Written after midnight. Showing when it\u2019s ready.", W / 2, 202);
       c.globalAlpha = 1;
     }
     // Old film: grain, scratches and a soft vignette.

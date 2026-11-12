@@ -53,13 +53,13 @@ export const ROADMAP = [
 ];
 
 export const EXTRA_SECTIONS = {
-  publications: { label: "Papers", color: "#e9c46a", tip: "Journals: my three published papers" },
+  publications: { label: "Papers", color: "#e9c46a", tip: "Journals: my work, in print" },
   future: { label: "Future", color: "#6cc5ff", tip: "Blueprint: what I'm building next" },
-  films: { label: "Films", color: "#ff8a5c", tip: "Home cinema: movies and stories" },
+  films: { label: "Films", color: "#ff8a5c", tip: "Home cinema: the stories I'm writing" },
   heartbreak: { label: "Torn Pages", color: "#ff6b8b", tip: "Torn Pages: a poster from a sad chapter" },
-  phone: { label: "Phone", color: "#7cf2c8", tip: "Unknown caller: click to answer" },
+  phone: { label: "Phone", color: "#7cf2c8", tip: "Unknown caller: pick up" },
   guestbook: { label: "Guestbook", color: "#f4d35e", tip: "Guestbook: pin a note" },
-  scooter: { label: "My ride", color: "#19d3c5", tip: "My EV: click to see my ride" },
+  scooter: { label: "My ride", color: "#19d3c5", tip: "My EV: take a look" },
 };
 
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
@@ -67,8 +67,8 @@ const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&
 export function mountPublications(root, hooks, openIndex) {
   root.innerHTML = `
     <p class="eyebrow">Publications</p>
-    <h2>Three papers, in print</h2>
-    <p class="lead">Each journal on the shelf is one of my published papers. Pick one to open it.</p>
+    <h2>Work, in print</h2>
+    <p class="lead">Three published papers, one journal each on the shelf. Pick one to read what I found and how.</p>
     <div class="view"><ul class="projects">${PUBLICATIONS.map((p, i) => `
       <li class="acc in${i === openIndex ? " open" : ""}" style="--i:${i}">
         <button class="acc-head" type="button" aria-expanded="${i === openIndex}" data-i="${i}">
@@ -97,7 +97,7 @@ export function mountFuture(root, hooks) {
   root.innerHTML = `
     <p class="eyebrow">What's next</p>
     <h2>My own SaaS company</h2>
-    <p class="lead">The goal: start a SaaS company of my own, built on a groundbreaking idea. The blueprint’s drawn; the details stay under wraps for now.</p>
+    <p class="lead">The goal: a SaaS company of my own, built on one big idea. The blueprint’s drawn. I’ll show this work when it’s ready.</p>
     <div class="view">
       <ol class="timeline">${ROADMAP.map(([step, text, when], i) => `
         <li class="acc in${i === 0 ? " open" : ""}" style="--i:${i}">
@@ -118,19 +118,20 @@ export const HEARTBREAK_LINES = [
 
 export function mountFilms(root) {
   const scenes = [
-    ["Scene 01 · Int. room, after midnight", "The writer", "The house is asleep. A cursor blinks. Characters who refuse to leave my head finally get a page of their own."],
-    ["Scene 02 · Ext. anywhere, golden hour", "The director", "Everything becomes a frame: the light through a window, a pause before a line, the cut that makes you feel it."],
+    ["Scene 01 · Int. bedroom, late night", "The writer", "When I’m not writing code, I’m writing scripts for movies I hope to make someday. Mostly stories about underdogs, struggles and unexpected comebacks."],
+    ["Scene 02 · Int. movie theatre, anytime", "The audience", "Any genre, any time. My only exception? Love stories. Somehow, ghosts are easier to deal with."],
+    ["Scene 03 · Int. my head, before a big decision", "The storyboard", "Movies have taught me to visualise before I act. I analyse situations, imagine possible endings and try to stay one scene ahead."],
+    ["Scene 04 · Int. same head, 3 a.m.", "The overthinker", "A useful skill, until I start directing scenes that haven’t even happened. My brain shoots 40 takes before life says action."],
+    ["Scene 05 · Ext. life, unscripted", "The protagonist", "I treat life like a movie. No script, no spoilers, just unexpected characters and plot twists. Even the director has no idea what’s coming next."],
   ];
-  const slate = [["Short film", "In pre-production"], ["Story collection", "Chapter by chapter"], ["Genre", "Quiet, human, hopeful"], ["Release", "When it's ready"]];
   root.innerHTML = `
-    <p class="eyebrow">Now showing · Reel one</p>
-    <h2>Movies & stories</h2>
+    <p class="eyebrow">Now showing · Director’s cut</p>
+    <h2>The other screenplay</h2>
     <div class="view reel">
-      <p class="logline in" style="--i:0">By day, he teaches machines to understand stories. By night, he writes his own.</p>
+      <p class="logline in" style="--i:0">Apart from technology, there’s another story I’m hoping to bring to life someday.</p>
       ${scenes.map(([head, title, text], i) => `
       <div class="scene in" style="--i:${i + 1}"><b>${esc(head)}</b><strong>${esc(title)}</strong><span>${esc(text)}</span></div>`).join("")}
-      <div class="slate in" style="--i:3">${slate.map(([k, v]) => `<div><small>${esc(k)}</small><em>${esc(v)}</em></div>`).join("")}</div>
-      <p class="fade in" style="--i:4">TO BE CONTINUED…</p>
+      <p class="fade in" style="--i:${scenes.length + 1}">CUT TO: THE NEXT SCENE. PLOT TWIST: STILL PENDING.</p>
     </div>`;
 }
 
@@ -164,7 +165,7 @@ export function mountPhone(root, hooks) {
   root.innerHTML = `
     <p class="eyebrow">Incoming call</p>
     <h2>Hey, you’ve reached me</h2>
-    <p class="lead">Sorry I missed you. I’m probably asleep on the sofa after a long training run.</p>
+    <p class="lead">Sorry I missed you. I’m asleep on the sofa, and the models are still training.</p>
     <div class="view">
       <div class="card static in"><strong>Leave a message after the beep…</strong><span>Or better: pin a note on the guestbook, or drop me an email. I’ll get back to you when I wake up.</span></div>
       <div class="actions"><button class="action solid" type="button" data-go="guestbook">Pin a note</button><button class="action" type="button" data-go="contact">Email me</button></div>

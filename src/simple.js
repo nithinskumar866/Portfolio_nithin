@@ -3,10 +3,19 @@ import "@fontsource/syne/700.css";
 import "@fontsource/dm-sans/400.css";
 import "@fontsource/dm-sans/600.css";
 import "./simple.css";
-import { CERTS, EMAIL, EXPERIENCE, FOCUS, PROJECTS, RESUME, SKILLS } from "./content.js";
+import { CERTS, EMAIL, EXPERIENCE, FEATURED, FOCUS, OTHERS, RESUME, SKILLS } from "./content.js";
 
 const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
 const link = (href, text) => `<a href="${href}" target="_blank" rel="noopener noreferrer">${text}</a>`;
+const project = (p) => `
+      <article>
+        <h3>${esc(p.title)}</h3>
+        <p>${esc(p.tagline)} ${esc(p.problem)}</p>
+        <ul>${p.points.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>
+        <p class="meta">${p.stack.map(esc).join(" · ")}</p>
+        ${p.note ? `<p class="meta">${esc(p.note)}</p>` : ""}
+        <p class="links">${link(p.code, "View code")}${p.demo ? ` ${link(p.demo, p.demoLabel ?? "Live demo")}` : ""}</p>
+      </article>`;
 
 document.getElementById("app").innerHTML = `
   <header>
@@ -41,17 +50,13 @@ document.getElementById("app").innerHTML = `
 
   <section>
     <h2>Projects</h2>
-    ${PROJECTS.map((p) => `
-      <article>
-        <h3>${esc(p.title)}</h3>
-        <p>${esc(p.tagline)} ${esc(p.problem)}</p>
-        <ul>${p.points.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>
-        <p class="meta">${p.stack.map(esc).join(" · ")}</p>
-        ${p.note ? `<p class="meta">${esc(p.note)}</p>` : ""}
-        <p class="links">${link(p.code, "View code")}${p.demo ? ` ${link(p.demo, "Live demo")}` : ""}</p>
-      </article>`).join("")}
+    ${FEATURED.map(project).join("")}
   </section>
 
+  <section>
+    <h2>Other projects</h2>
+    ${OTHERS.map(project).join("")}
+  </section>
   <section>
     <h2>Skills</h2>
     <dl>${SKILLS.map((g) => `<dt>${esc(g.name)}</dt><dd>${Object.keys(g.items).map(esc).join(", ")}</dd>`).join("")}</dl>
