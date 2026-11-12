@@ -64,6 +64,6 @@ document.getElementById("app").innerHTML = `
 
   <section>
     <h2>Certificates</h2>
-    <ul>${CERTS.map(([n, by]) => `<li>${esc(n)} <span class="meta">(${esc(by)})</span></li>`).join("")}</ul>
+    <ul>${CERTS.map((c) => `<li>${esc(c.name)} <span class="meta">(${esc(c.by)})</span><br><span class="meta">Used in: ${c.used.map((u) => esc(u.label ?? [...FEATURED, ...OTHERS].find((p) => p.id === u.id).title)).join(", ")}</span></li>`).join("")}</ul>
   </section>
 `;

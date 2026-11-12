@@ -67,9 +67,32 @@ export const SKILLS = [
   { name: "Tools & Data", items: { Git: ["All projects"], "Power BI": ["DataCamp certificate"], Figma: [] } },
 ];
 
+// One book per certificate. "used" points at a project id (opens it on the monitor) or, where there's no repo to show, a plain label.
 export const CERTS = [
-  ["IBM AI Engineering (Professional)", "IBM, Coursera"], ["Zero to Hero in LangChain", "Udemy"], ["Professional Data Scientist, Power BI", "DataCamp"], ["Associate Data Scientist", "DataCamp"],
-  ["Data Scientist", "DataCamp"], ["Python & Django Complete Web Development", "Udemy"], ["Complete JavaScript & React Core", "Udemy"], ["Java DSA: Mastering the Fundamentals", "Online course"],
+  { name: "IBM AI Engineering (Professional)", short: "IBM AI", by: "IBM, Coursera", color: "#2a9d8f",
+    learned: ["Deep learning with PyTorch and Keras", "Training, tuning and deploying models", "Computer vision and NLP from the ground up"],
+    used: [{ id: "style", what: "The ResNet50 that sorts clothes into 50 categories." }, { id: "models", what: "The theory behind all fifteen algorithm repos." }] },
+  { name: "Zero to Hero in LangChain", short: "LangChain", by: "Udemy", color: "#e9c46a",
+    learned: ["Chains, tools and memory", "Retrieval over your own documents", "Building and debugging agents"],
+    used: [{ id: "documentor", what: "Three LangGraph agents that cite the textbook." }, { id: "hiring", what: "The LangGraph backend behind every candidate score." }] },
+  { name: "Professional Data Scientist, Power BI", short: "Power BI", by: "DataCamp", color: "#d9583f",
+    learned: ["Data modelling and DAX", "Dashboards that answer one question at a glance"],
+    used: [{ label: "Every chart I make now", what: "One job per chart, a title that says the answer, and the pie charts have been politely retired." }, { label: "Explaining numbers to non-data people", what: "If it needs a legend to make sense, it goes back for another draft." }] },
+  { name: "Associate Data Scientist", short: "Assoc. DS", by: "DataCamp", color: "#f6efe2",
+    learned: ["Cleaning and exploring messy data", "Supervised learning with scikit-learn"],
+    used: [{ id: "aqi", what: "A Random Forest over real pollution readings." }] },
+  { name: "Data Scientist", short: "Data Sci", by: "DataCamp", color: "#3d5a80",
+    learned: ["Feature engineering and selection", "Model selection and hyperparameter search"],
+    used: [{ id: "models", what: "Tuned with the same search and feature selection." }, { id: "investo", what: "The weighted nine-factor match score." }] },
+  { name: "Python & Django Complete Web Development", short: "Django", by: "Udemy", color: "#e07a5f",
+    learned: ["Django models, views and auth", "Building REST APIs"],
+    used: [{ id: "investo", what: "The Django backend, with 930 passing tests." }, { id: "folio", what: "My first portfolio, with logins and an admin." }] },
+  { name: "Complete JavaScript & React Core", short: "React", by: "Udemy", color: "#81b29a",
+    learned: ["Modern JavaScript", "React components, state and hooks"],
+    used: [{ id: "hiring", what: "The React app over all three services." }, { id: "style", what: "The outfit picker front end." }, { id: "ecommerce", what: "A whole storefront, in plain JavaScript and Vue." }] },
+  { name: "Java DSA: Mastering the Fundamentals", short: "Java DSA", by: "Online course", color: "#c8a2c8",
+    learned: ["Arrays, trees and graphs", "Time and space complexity"],
+    used: [{ label: "LeetCode", href: "https://leetcode.com/u/nithinsofficial86/", what: "Where the trees and graphs get their daily workout." }, { label: "Every loop I write", what: "I check the Big-O before I check the output. Most days." }] },
 ];
 
 export const FOCUS = [
@@ -84,7 +107,7 @@ export const SECTIONS = {
   projects: { label: "Projects", tip: "The monitor: proof of work", color: "#6cc5ff", eyebrow: "On the monitor · Proof of work", title: "Don't take my word for it", lead: "Open a project and watch it run on the monitor." },
   experience: { label: "Experience", tip: "The pinboard: where I've worked", color: "#e8b06f", eyebrow: "On the pinboard", title: "Pinned up so far", lead: "One note for each job, with what I actually shipped there. Open one and it lifts off the board." },
   skills: { label: "Skills", tip: "The server rack: skills, with receipts", color: "#9be26e", eyebrow: "In the server rack", title: "Skills, with receipts", lead: "Pick a skill to see exactly where I've used it." },
-  certificates: { label: "Certificates", tip: "The bookshelf: certificates", color: "#f4907a", eyebrow: "On the bookshelf", title: "I did the reading", lead: "One book for each certificate. Hover or tap one to pull it off the shelf." },
+  certificates: { label: "Certificates", tip: "The bookshelf: what I read, where I used it", color: "#f4907a", eyebrow: "On the bookshelf", title: "I did the reading. Here's the homework.", lead: "One book for each certificate. Pick one to open it: what the course taught me on the left, where I used it on the right." },
   contact: { label: "Contact", tip: "The mailbox: say hello", color: "#8aaeff", eyebrow: "In the mailbox", title: "Drop me a letter", lead: "I'm looking for AI and LLM engineering roles. Leave a letter and I'll answer as soon as I wake up." },
 };
 export const SECTION_ORDER = Object.keys(SECTIONS);
@@ -145,8 +168,9 @@ const VIEWS = {
     <div class="skill-list" id="skill-list"></div>
     <div class="evidence" id="evidence" aria-live="polite"></div>`,
 
-  certificates: () => `<ul class="certs">${CERTS.map(([n, by], i) => `
-    <li class="in" style="--i:${i}"><button type="button" class="cert" data-book="${i}" aria-pressed="false"><span class="spine" style="--book:${["#2a9d8f", "#e9c46a", "#d9583f", "#f6efe2", "#3d5a80", "#e07a5f", "#81b29a", "#c8a2c8"][i]}"></span><span class="acc-title"><strong>${esc(n)}</strong><small>${esc(by)}</small></span></button></li>`).join("")}</ul>`,
+  certificates: () => `
+    <div class="minishelf in" role="group" aria-label="Certificates">${CERTS.map((c, i) => `<button type="button" class="cert" data-book="${i}" aria-pressed="${i === 0}" aria-label="${esc(c.name)}, ${esc(c.by)}" style="--book:${c.color};--h:${78 + ((i * 7) % 5) * 7}px"><span>${esc(c.short)}</span></button>`).join("")}</div>
+    <div class="spread in" style="--i:1" aria-live="polite"></div>`,
 
   contact: () => `
     <button type="button" class="mail in" id="copy" style="--i:0"><small>Email, click to copy</small><strong>${EMAIL}</strong><span id="copied">Copy</span></button>
@@ -210,15 +234,34 @@ const WIRES = {
     showGroup(0);
   },
   certificates(root, hooks) {
-    const certs = [...root.querySelectorAll(".cert")];
-    let held = null;
+    const certs = [...root.querySelectorAll(".cert")], spread = root.querySelector(".spread");
+    let held = 0;
+    const receipt = (u) => {
+      const p = u.id && PROJECTS.find((x) => x.id === u.id);
+      if (p) return `<button type="button" class="receipt" data-project="${p.id}"><b>${esc(p.title)}<span aria-hidden="true"> &rarr;</span></b><span>${esc(u.what)}</span><small>Open it on the monitor</small></button>`;
+      if (u.href) return `<a class="receipt" href="${u.href}" target="_blank" rel="noopener noreferrer"><b>${esc(u.label)}<span aria-hidden="true"> &#8599;</span></b><span>${esc(u.what)}</span></a>`;
+      return `<div class="receipt"><b>${esc(u.label)}</b><span>${esc(u.what)}</span></div>`;
+    };
+    const open = (i) => {
+      const c = CERTS[i];
+      spread.style.setProperty("--book", c.color);
+      spread.innerHTML = `
+        <div class="leaf"><small>${esc(c.by)}</small><h3>${esc(c.name)}</h3><small>What it taught me</small><ul>${c.learned.map((l) => `<li>${esc(l)}</li>`).join("")}</ul></div>
+        <div class="leaf"><small>Where I used it</small>${c.used.map(receipt).join("")}</div>`;
+      spread.querySelectorAll("[data-project]").forEach((b) => b.addEventListener("click", () => {
+        hooks.go("projects");
+        root.querySelector(`.project[data-id="${b.dataset.project}"] .acc-head`)?.click();
+      }));
+    };
     certs.forEach((c, i) => {
       c.addEventListener("mouseenter", () => hooks.book(i));
       c.addEventListener("mouseleave", () => hooks.book(held));
-      c.addEventListener("focus", () => hooks.book(i));
-      c.addEventListener("click", () => { held = held === i ? null : i; certs.forEach((o, j) => o.setAttribute("aria-pressed", String(j === held))); hooks.book(held ?? i); });
+      c.addEventListener("click", () => { held = i; certs.forEach((o, j) => o.setAttribute("aria-pressed", String(j === i))); open(i); hooks.book(i); });
     });
+    open(0);
+    hooks.book(0);
   },
+
   contact(root, hooks) {
     root.querySelector("#copy").addEventListener("click", async () => {
       const label = root.querySelector("#copied");

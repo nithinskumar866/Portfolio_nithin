@@ -6,7 +6,7 @@ const STEPS = [
   { key: "projects", say: "Everything he's built runs on this monitor. Open a project, like the AI Hiring Platform or DocuMentor, and watch it work." },
   { key: "experience", say: "One note on this board for every job, with what he actually shipped there." },
   { key: "skills", say: "This rack runs his skills. Pick one and it shows you where he used it. Receipts included." },
-  { key: "certificates", say: "One book on this shelf for every certificate. He did the reading." },
+  { key: "certificates", say: "One book for every certificate. Open one and it shows where he used it. He did the homework too." },
   { key: "contact", say: "Want to reach him? Leave a letter in the mailbox. I'll make sure he sees it when he wakes up." },
   { key: "about", say: "And that's Nithin. Click him to read about him. Don't worry, he won't wake up." },
   { say: "That's the tour. Click anything in the room, or use the menu below. Click me if you want to go round again.", primary: "Start exploring" },

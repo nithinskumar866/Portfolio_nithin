@@ -149,11 +149,27 @@ img.wide { display: block; width: 100%; aspect-ratio: 16/9; object-fit: cover; o
 .evidence p { margin-top: 6px; font-size: 14px; color: var(--dim); }
 
 /* Certificates */
-.certs { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
-.cert { display: flex; align-items: center; gap: 13px; width: 100%; padding: 10px 13px 10px 10px; border-radius: 12px; border: 1px solid #ffffff1c; background: #ffffff0a; text-align: left; transition: all .22s; }
-.cert:hover, .cert:focus-visible, .cert[aria-pressed="true"] { border-color: var(--sec); background: color-mix(in srgb, var(--sec) 12%, transparent); transform: translateX(-6px); }
-.spine { flex: none; width: 13px; height: 42px; border-radius: 3px; background: var(--book); box-shadow: inset -3px 0 0 #0003; transition: transform .22s; }
-.cert:hover .spine, .cert[aria-pressed="true"] .spine { transform: translateY(-3px) rotate(-5deg); }
+/* A little shelf of spines to pick from, then the picked book lies open below it. */
+.minishelf { display: flex; align-items: flex-end; gap: 5px; padding: 0 8px; min-height: 120px; border-bottom: 7px solid #5d3c28; border-radius: 2px; margin-bottom: 16px; }
+.cert { flex: 1 1 0; min-width: 0; height: var(--h); padding: 8px 0; border: 0; border-radius: 4px 4px 1px 1px; background: var(--book); color: #1b1712; box-shadow: inset -5px 0 0 #0002, inset 0 7px 0 #ffffff26; display: grid; place-items: center; transition: transform .25s cubic-bezier(.2,.85,.2,1), box-shadow .25s; }
+.cert span { writing-mode: vertical-rl; transform: rotate(180deg); font: 600 11px/1 var(--mono, "DM Mono", monospace); letter-spacing: .04em; white-space: nowrap; overflow: hidden; max-height: calc(var(--h) - 16px); }
+.cert:hover, .cert:focus-visible { transform: translateY(-6px); }
+.cert[aria-pressed="true"] { transform: translateY(-14px) rotate(-4deg); box-shadow: inset -5px 0 0 #0002, 0 0 0 2px var(--sec), 0 10px 18px #0006; }
+.cert:focus-visible { outline: 2px solid var(--sec); outline-offset: 3px; }
+.spread { position: relative; display: grid; grid-template-columns: 1fr 1fr; background: #f3ead8; color: #2b2620; border-radius: 4px; border-top: 6px solid var(--book); box-shadow: 0 16px 34px #0007; animation: spread-open .5s cubic-bezier(.2,.85,.2,1); }
+.spread::after { content: ""; position: absolute; left: 50%; top: 0; bottom: 0; width: 20px; transform: translateX(-50%); pointer-events: none; background: linear-gradient(90deg, #0000, #0000001f 45%, #0000002e 50%, #0000001f 55%, #0000); }
+.leaf { padding: 16px 14px 18px; display: grid; gap: 8px; align-content: start; font-size: 13px; line-height: 1.45; min-width: 0; }
+.leaf small { font: 500 10px/1.2 var(--mono, "DM Mono", monospace); letter-spacing: .1em; text-transform: uppercase; color: #8a6d55; }
+.leaf h3 { margin: 0 0 6px; font-size: 17px; line-height: 1.2; color: #2b2620; text-wrap: balance; }
+.leaf ul { margin: 0; padding-left: 16px; display: grid; gap: 4px; }
+.receipt { display: grid; gap: 3px; width: 100%; padding: 9px 10px; border-radius: 7px; border: 1px dashed #8a6d5580; background: #fffaf0; color: #2b2620; text-align: left; text-decoration: none; font: inherit; transition: border-color .2s, transform .2s; }
+.receipt b { font-weight: 600; }
+.receipt span { font-size: 12px; color: #5d5246; }
+.receipt small { color: #b0563f; }
+button.receipt:hover, a.receipt:hover, .receipt:focus-visible { border-style: solid; border-color: var(--sec); transform: translateY(-2px); }
+@keyframes spread-open { from { opacity: 0; transform: perspective(700px) rotateX(18deg) translateY(10px); } }
+@media (max-width: 380px) { .spread { grid-template-columns: 1fr; } .spread::after { display: none; } }
+@media (prefers-reduced-motion: reduce) { .spread { animation: none; } .cert { transition: none; } }
 
 /* Contact */
 .mail { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 2px 12px; width: 100%; padding: 14px; border-radius: 13px; background: var(--sec); color: #0b101e; text-align: left; transition: transform .2s; }

@@ -1,7 +1,8 @@
 import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
-import { SECTIONS, SECTION_ORDER, mountSection } from "../content.js";
+import { PROJECTS, SECTIONS, SECTION_ORDER, mountSection } from "../content.js";
+import { createOpenBook } from "../openbook.js";
 import { createTour, hasSeenTour } from "../tour.js";
 import { createMonitor } from "../monitor.js";
 import { createMatch } from "./match.js";
@@ -191,6 +192,7 @@ bookColors.forEach((c, i) => {
   books.push(box(0.36, h, t, c, shelf, -3.56, row - 0.45 + h / 2, z, 0.012));
   z += t + 0.03;
 });
+const openBook = createOpenBook(shelf, books, Object.fromEntries(PROJECTS.map((p) => [p.id, p.title])), reduce);
 box(0.34, 0.1, 0.46, "#3d5a80", shelf, -3.56, 2.39, 0.75, 0.015);
 ball(0.13, "#e9c46a", shelf, -3.56, 2.57, 0.75);
 cyl(0.11, 0.09, 0.2, "#e8dcc6", shelf, -3.56, 2.44, 1.85);
@@ -745,7 +747,7 @@ const cardHooks = {
 };
 
 // Where the robot stands for each stop. It walks around the sofa instead of through it.
-const STANDS = { home: [2.95, 2.35], about: [-2.95, -0.75], projects: [2.05, -1.35 - G], experience: [-1.4, -2.45 - G], skills: [2.5, -1.75 - G], certificates: [-2.65 - G, 0.4], contact: [2.85, 0.35], tv: [-4.4, 6.0], publications: [-4.3, 2.45], future: [-1.3, -3.5], poster: [-1.6, -3.4], films: [-1.5, -4.6], heartbreak: [-4.5, 4.6], guestbook: [2.4, -2.8], scooter: [3.3, -2.6], phone: [0.9, 2.8] };
+const STANDS = { home: [2.95, 2.35], about: [-2.95, -0.75], projects: [2.05, -1.35 - G], experience: [-1.4, -2.45 - G], skills: [2.5, -1.75 - G], certificates: [-2.65 - G, -0.55], contact: [2.85, 0.35], tv: [-4.4, 6.0], publications: [-4.3, 2.45], future: [-1.3, -3.5], poster: [-1.6, -3.4], films: [-1.5, -4.6], heartbreak: [-4.5, 4.6], guestbook: [2.4, -2.8], scooter: [3.3, -2.6], phone: [0.9, 2.8] };
 let robotPath = [];
 function walkTo(key) {
   const [x, z] = STANDS[key] ?? STANDS.home;
@@ -971,7 +973,6 @@ function render() {
       n.parts.forEach((p) => { p.scale.setScalar(1 + n.z * 0.14); });
       n.parts[0].position.x = 0.04 + n.z * 0.06; n.parts[1].position.x = 0.054 + n.z * 0.075;
     });
-    books.forEach((b, i) => { const target = selected.book === i ? -3.12 : -3.56; b.position.x += (target - b.position.x) * 0.16; });
     groups.forEach((g) => {
       const lift = hovered === g.userData.station ? 0.05 : 0;
       g.position.y += (baseY.get(g) + lift - g.position.y) * 0.14;
@@ -986,6 +987,7 @@ function render() {
     p.g.scale.setScalar(1 + p.o * 0.25);
     p.g.rotation.z = p.tilt * (1 - p.o);
   });
+  openBook.update(selected.book);
   if (reduce) { zs.forEach((item, i) => { item.z.position.set(-1.05 + i * 0.12, 1.3 + i * 0.28, 0.2); const size = 0.12 + i * 0.07; item.z.scale.set(size, size, 1); item.m.opacity = 0.9; }); robot.rotation.y = 0.72; }
   if ((shadowFrame = (shadowFrame + 1) % 2) === 0) renderer.shadowMap.needsUpdate = true;
   renderer.render(scene, camera);

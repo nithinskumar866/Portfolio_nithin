@@ -1,7 +1,8 @@
 import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
-import { SECTIONS, SECTION_ORDER, mountSection } from "./content.js";
+import { PROJECTS, SECTIONS, SECTION_ORDER, mountSection } from "./content.js";
+import { createOpenBook } from "./openbook.js";
 import { createTour, hasSeenTour } from "./tour.js";
 import { createMonitor } from "./monitor.js";
 import "@fontsource/syne/700.css";
@@ -164,6 +165,7 @@ bookColors.forEach((c, i) => {
   books.push(box(0.36, h, t, c, shelf, -3.56, row - 0.45 + h / 2, z, 0.012));
   z += t + 0.03;
 });
+const openBook = createOpenBook(shelf, books, Object.fromEntries(PROJECTS.map((p) => [p.id, p.title])), reduce);
 box(0.34, 0.1, 0.46, "#3d5a80", shelf, -3.56, 2.39, 0.75, 0.015);
 ball(0.13, "#e9c46a", shelf, -3.56, 2.57, 0.75);
 cyl(0.11, 0.09, 0.2, "#e8dcc6", shelf, -3.56, 2.44, 1.85);
@@ -589,12 +591,12 @@ function render() {
       n.parts.forEach((p) => { p.scale.setScalar(1 + n.z * 0.14); });
       n.parts[0].position.x = 0.04 + n.z * 0.06; n.parts[1].position.x = 0.054 + n.z * 0.075;
     });
-    books.forEach((b, i) => { const target = selected.book === i ? -3.12 : -3.56; b.position.x += (target - b.position.x) * 0.16; });
     groups.forEach((g) => {
       const lift = hovered === g.userData.station ? 0.05 : 0;
       g.position.y += (baseY.get(g) + lift - g.position.y) * 0.14;
     });
   }
+  openBook.update(selected.book);
   if (reduce) { zs.forEach((item, i) => { item.z.position.set(-1.05 + i * 0.12, 1.3 + i * 0.28, 0.2); const size = 0.12 + i * 0.07; item.z.scale.set(size, size, 1); item.m.opacity = 0.9; }); robot.rotation.y = 0.72; }
   renderer.render(scene, camera);
   tour.place();
